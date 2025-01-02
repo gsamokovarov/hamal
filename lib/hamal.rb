@@ -73,7 +73,6 @@ module Hamal
     end
   end
 
-
   module Stages
     include Helpers
 
@@ -243,6 +242,7 @@ module Hamal
             "--env-file #{project_root}/env_file " \
             "-e GIT_REVISION=#{deployed_revision} " \
             "-v #{project_root}/db:/rails/db/#{deploy_env} " \
+            "-v #{project_root}/storage:/rails/storage " \
             "--entrypoint '/rails/bin/rails' " \
             "#{deployed_image} " \
             "console", interactive: true
