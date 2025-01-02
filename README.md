@@ -252,13 +252,13 @@ Make sure its owner user and group are `rails:rails`.
 
 If this is a new app, create its database by running `bin/rails db:create` in
 out of its images. You will likely have to do this at a later point, when you
-do have such an image. Examine `bin/hamal` to determine what arguments to
+do have such an image. Examine `hamal` to determine what arguments to
 `docker run` are needed, e.g. to set ENV variables and mount host directories.
 The final commands you're looking for will look something like this:
 
 ```
-docker run --rm <args inferred from bin/hamal> --entrypoint '/rails/bin/rails' <app_image> -- db:create
-docker run --rm <args inferred from bin/hamal> --entrypoint '/rails/bin/rails' <app_image> -- db:schema:load
+docker run --rm <args inferred from hamal> --entrypoint '/rails/bin/rails' <app_image> -- db:create
+docker run --rm <args inferred from hamal> --entrypoint '/rails/bin/rails' <app_image> -- db:schema:load
 ```
 
 ## GitHub
@@ -334,7 +334,7 @@ local commits.
 For more commands, run `hamal --help`:
 
 ```
-Usage: bin/hamal [command]
+Usage: hamal [command]
 
 Commands:
   deploy   - Deploy the app to the server
