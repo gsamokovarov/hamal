@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["Genadi Samokovarov"]
   spec.email = ["gsamokovarov@gmail.com"]
 
-  spec.summary = "Hamal is a simple deploy tool for self-hosted Rails application"
+  spec.summary = "Hamal is a simple deploy tool for self-hosted Rails applications"
   spec.homepage = "https://github.com/gsamokovarov/hamal"
   spec.required_ruby_version = ">= 3.1.0"
 

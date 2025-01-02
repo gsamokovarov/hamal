@@ -3,7 +3,7 @@ require "json"
 require "yaml"
 
 module Hamal
-  VERSION = "0.1.0"
+  VERSION = "0.1.1"
 
   module Config
     def config_file = "config/deploy.yml"
@@ -267,7 +267,7 @@ module Hamal
 
     def help_command
       puts <<~HELP
-        Usage: bin/hamal [command]
+        Usage: hamal [command]
 
         Commands:
           deploy   - Deploy the app to the server

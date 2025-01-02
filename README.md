@@ -1,4 +1,4 @@
-Hamal is a simple deploy tool for self-hosted Rails application. Learn how it
+Hamal is a simple deploy tool for self-hosted Rails applications. Learn how it
 works, how to configure it, and how to provision new servers.
 
 Not to be confused with Kamal. 😉
