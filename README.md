@@ -1,5 +1,5 @@
-Hamal is a simple deploy tool for self-hosted apps. Learn how it works, how to
-configure it, and how to provision new servers.
+Hamal is a simple deploy tool for self-hosted Rails application. Learn how it
+works, how to configure it, and how to provision new servers.
 
 Not to be confused with Kamal. 😉
 
@@ -30,8 +30,8 @@ To deploy the app to a server, you will need:
 
 # Provision
 
-When you want to deploy the app on a new server, prepare it for service first by following the
-steps in this section.
+When you want to deploy the app on a new server, prepare it for service first
+by following the steps in this section.
 
 ## System settings (on the server)
 
@@ -91,9 +91,11 @@ systemctl start nginx
 
 ### Configure (part 1, before we have an SSL certificate)
 
-We need this first incomplete part of the nginx configuration so that we can issue an SSL certificate.
+We need this first incomplete part of the nginx configuration so that we can
+issue an SSL certificate.
 
-Create the directory that will serve static content for the SSL verification process:
+Create the directory that will serve static content for the SSL verification
+process:
 
 ```
 mkdir /usr/share/nginx/cert_validations
@@ -164,9 +166,10 @@ Issue a certificate:
 certbot certonly -m genadi@hey.com --webroot -w /usr/share/nginx/cert_validations -d #{app_domain}
 ```
 
-Let's Encrypt certificates are only valid for 90 days and need to be renewed regularly. There's no
-need to manually create a cron, though, the certbot snap installation has already taken care of
-this by registering a `snap.certbot.renew.timer` systemd timer (check `systemctl list-timers`).
+Let's Encrypt certificates are only valid for 90 days and need to be renewed
+regularly. There's no need to manually create a cron, though, the certbot snap
+installation has already taken care of this by registering a
+`snap.certbot.renew.timer` systemd timer (check `systemctl list-timers`).
 
 Test that the renewal process is properly set up:
 
@@ -194,8 +197,9 @@ server {
 }
 ```
 
-Create a temporary dummy `#{app_name}.conf` file. This will get overwritten by the actual deploy
-process, but we need it for now to bootstrap nginx with a valid config:
+Create a temporary dummy `#{app_name}.conf` file. This will get overwritten by
+the actual deploy process, but we need it for now to bootstrap nginx with a
+valid config:
 
 ```
 ACTIVE_RAILS_PORT=80 envsubst < /etc/nginx/#{app_name}.conf.template > /etc/nginx/#{app_name}.conf
@@ -243,13 +247,14 @@ echo RAILS_MASTER_KEY=<actual_secret> > /var/lib/#{app_name}/env_file
 
 ## Database
 
-If this is an existing app, restore its database to `/var/lib/#{app_name}/db`. Make sure its owner
-user and group are `rails:rails`.
+If this is an existing app, restore its database to `/var/lib/#{app_name}/db`.
+Make sure its owner user and group are `rails:rails`.
 
-If this is a new app, create its database by running `bin/rails db:create` in out of its images. You
-will likely have to do this at a later point, when you do have such an image. Examine `bin/hamal`
-to determine what arguments to `docker run` are needed, e.g. to set ENV variables and mount host
-directories. The final commands you're looking for will look something like this:
+If this is a new app, create its database by running `bin/rails db:create` in
+out of its images. You will likely have to do this at a later point, when you
+do have such an image. Examine `bin/hamal` to determine what arguments to
+`docker run` are needed, e.g. to set ENV variables and mount host directories.
+The final commands you're looking for will look something like this:
 
 ```
 docker run --rm <args inferred from bin/hamal> --entrypoint '/rails/bin/rails' <app_image> -- db:create
@@ -258,8 +263,8 @@ docker run --rm <args inferred from bin/hamal> --entrypoint '/rails/bin/rails' <
 
 ## GitHub
 
-Create and add a deploy key to grant the server read-only access to this repository. Follow the
-[official docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys).
+Create and add a deploy key to grant the server read-only access to this
+repository. Follow the [official docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys).
 In short:
 
 1. Create a new SSH key for the root user on the server
@@ -272,9 +277,10 @@ In short:
 
 2. Add the key to GitHub
 
-   Open repository in GitHub, in "Settings" -> "Deploy keys" press "Add deploy key". Enter a title
-   (e.g. the `Hetzner_<serverIP>` comment), the public key you just created (i.e. the contents of
-   `.ssh/github_deploy.pub`), and press "Add key".
+   Open repository in GitHub, in "Settings" -> "Deploy keys" press "Add deploy
+   key". Enter a title (e.g. the `Hetzner_<serverIP>` comment), the public key
+   you just created (i.e. the contents of `.ssh/github_deploy.pub`), and press
+   "Add key".
 
 3. Configure SSH on the server to use this key when connecting to GitHub
 
@@ -289,14 +295,16 @@ In short:
 
 The deploy script expects certain configuration in `config/deploy.yml`:
 
-- `github_repo`: The repo where the app's source is located, in the form `<username>/<repo_name>`.
-- `app_name`: Used as part of directory and Docker image names, so must be a valid identifier: only
-  letters, numbers, and underscores.
+- `github_repo`: The repo where the app's source is located, in the form
+  `<username>/<repo_name>`.
+- `app_name`: Used as part of directory and Docker image names, so must be a
+  valid identifier: only letters, numbers, and underscores.
 - `app_domain`: The hostname that this app will be accessible at.
 - `server`: The IP address of a provisioned server.
-- `local_ports`: An array of at least two ports that will be used by the run the app locally on the
-  server. These ports will not be exposed to the Internet. If you're using the server to host
-  multiple apps using this script, make sure that all apps are configured with unique ports so that
+- `local_ports`: An array of at least two ports that will be used by the run
+  the app locally on the server. These ports will not be exposed to the
+  Internet. If you're using the server to host multiple apps using this
+  script, make sure that all apps are configured with unique ports so that
   they do not conflict with each other.
 
 # Usage
