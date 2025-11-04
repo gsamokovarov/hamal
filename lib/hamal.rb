@@ -13,8 +13,8 @@ module Hamal
     def deploy_env = "production"
     def app_name = deploy_config.fetch "app_name"
     def app_repo = deploy_config.fetch "github_repo"
-    def app_local_ports = deploy_config.fetch("local_ports").map(&:to_s)
     def server = deploy_config.fetch "server"
+    def workers = deploy_config.fetch "workers"
     def project_root = "/var/lib/#{app_name}"
   end
 
@@ -107,20 +107,12 @@ module Hamal
       log "Running migrations"
 
       on_server do
-        sh! "docker run --rm " \
-            "--label app=#{app_name} " \
-            "--env-file #{project_root}/env_file " \
-            "-e GIT_REVISION=#{deployed_revision} " \
-            "-v #{project_root}/db:/rails/db/#{deploy_env} " \
-            "-v #{project_root}/storage:/rails/storage " \
-            "--entrypoint '/rails/bin/rails' " \
-            "#{deployed_image} " \
-            "-- db:migrate"
+        sh! docker_command("db:migrate")
       end
     end
 
-    def start_new_container
-      log "Starting container for new version"
+    def start_new_containers
+      log "Starting containers for new version"
 
       # Determine which ports are currently bound and which are free for the new container
       running_containers = on_server { sh! "docker ps -q --filter label=app=#{app_name}" }.output.split
@@ -131,19 +123,17 @@ module Hamal
           (port_settings["3000/tcp"] || []).map { _1["HostPort"] }.compact
         end.flatten
 
-      available_port = (app_local_ports - bound_ports).first
-      abort "No TCP port available" unless available_port
+      workers.each do |worker|
+        if worker["host_ports"]
+          available_port = (worker["host_ports"].map(&:to_s) - bound_ports).first
+          abort "No TCP port available" unless available_port
 
-      log "  Using port #{available_port} for new container"
-      on_server do
-        sh! "docker run -d --rm " \
-            "--label app=#{app_name} " \
-            "--env-file #{project_root}/env_file " \
-            "-e GIT_REVISION=#{deployed_revision} " \
-            "-v #{project_root}/db:/rails/db/#{deploy_env} " \
-            "-v #{project_root}/storage:/rails/storage " \
-            "-p 127.0.0.1:#{available_port}:3000 " \
-            "#{deployed_image}"
+          log "  Using port #{available_port} for new #{worker['name']} container"
+        end
+
+        on_server do
+          sh! docker_command(worker["command"], detach: true, host_port: worker["host_ports"] ? available_port : nil)
+        end
       end
 
       [available_port, running_containers]
@@ -192,6 +182,21 @@ module Hamal
         sh! 'docker system prune --all --force --filter "until=24h"'
       end
     end
+
+    private
+
+    def docker_command(cmd, detach: false, host_port: nil)
+      command = "docker run"
+      command << " -d" if detach
+      command << " --rm" \
+                 " --label app=#{app_name}" \
+                 " --env-file #{project_root}/env_file" \
+                 " -e GIT_REVISION=#{deployed_revision}" \
+                 " -v #{project_root}/db:/rails/db/#{deploy_env}" \
+                 " -v #{project_root}/storage:/rails/storage"
+      command << " -p 127.0.0.1:#{host_port}:3000" if host_port
+      command << " #{deployed_image} -- #{cmd}"
+    end
   end
 
   module Commands
@@ -223,7 +228,7 @@ module Hamal
     def deploy_command
       build_new_image
       run_deploy_tasks
-      new_container_port, old_containers = start_new_container
+      new_container_port, old_containers = start_new_containers
       switch_traffic new_container_port
       stop_old_container old_containers
       clean_up
