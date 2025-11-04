@@ -209,6 +209,8 @@ module Hamal
         console_command
       when "logs"
         logs_command
+      when "dump"
+        dump_command
       when "sudo"
         sudo_command
       else
@@ -261,6 +263,14 @@ module Hamal
       end
     end
 
+    def dump_command
+      log "Dumping database"
+
+      on_server do
+        system "scp -O root@#{server}:/var/lib/#{app_name}/db/data.sqlite3 data.sqlite3", exception: true
+      end
+    end
+
     def sudo_command
       system "ssh root@#{server}", exception: true
     end
@@ -271,7 +281,8 @@ module Hamal
 
         Commands:
           deploy   - Deploy the app to the server
-          console  - Run Rails console in the deployed container
+          console  - Run rails console in the deployed container
+          backup   - Backup the SQLite database from the server
           logs     - Follow logs of the deployed container
           sudo     - SSH into the server as administrator
       HELP
