@@ -3,7 +3,7 @@ require "json"
 require "yaml"
 
 module Hamal
-  VERSION = "0.1.1"
+  VERSION = "0.2"
 
   module Config
     def config_file = "config/deploy.yml"
