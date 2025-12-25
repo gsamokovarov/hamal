@@ -211,7 +211,7 @@ module Hamal
         logs_command
       when "dump"
         dump_command
-      when "sudo"
+      when "ssh", "sudo"
         sudo_command
       else
         help_command
@@ -284,7 +284,7 @@ module Hamal
           console  - Run rails console in the deployed container
           backup   - Backup the SQLite database from the server
           logs     - Follow logs of the deployed container
-          sudo     - SSH into the server as administrator
+          ssh      - SSH into the server as administrator, alias: sudo
       HELP
     end
   end
