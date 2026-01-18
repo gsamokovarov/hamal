@@ -210,7 +210,7 @@ module Hamal
         console_command
       when "logs"
         logs_command
-      when "dump"
+      when "dump", "backup"
         dump_command
       when "ssh", "sudo"
         sudo_command
@@ -291,7 +291,7 @@ module Hamal
         Commands:
           deploy   - Deploy the app to the server
           console  - Run rails console in the deployed container
-          backup   - Backup the SQLite database from the server
+          backup   - Backup the SQLite database from the server, alias: dump
           logs     - Follow logs of the deployed container
           ssh      - SSH into the server as administrator, alias: sudo
       HELP
