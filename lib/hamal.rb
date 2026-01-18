@@ -16,6 +16,7 @@ module Hamal
     def app_local_ports = deploy_config.fetch("local_ports").map(&:to_s)
     def server = deploy_config.fetch "server"
     def project_root = "/var/lib/#{app_name}"
+    def aliases = deploy_config.fetch "aliases", {}
   end
 
   module Helpers
@@ -202,7 +203,7 @@ module Hamal
     def execute
       abort "Configure server in deploy config file" unless server
 
-      case ARGV.shift
+      case cmd = ARGV.shift
       when "deploy"
         deploy_command
       when "console"
@@ -213,6 +214,8 @@ module Hamal
         dump_command
       when "ssh", "sudo"
         sudo_command
+      when *aliases.keys
+        alias_command(cmd)
       else
         help_command
       end
@@ -275,6 +278,12 @@ module Hamal
       system "ssh root@#{server}", exception: true
     end
 
+    def alias_command(alias_cmd)
+      log "Running alias command '#{alias_cmd}' -> '#{aliases[alias_cmd]}'"
+
+      on_server { sh aliases[alias_cmd] }
+    end
+
     def help_command
       puts <<~HELP
         Usage: hamal [command]
@@ -285,6 +294,10 @@ module Hamal
           backup   - Backup the SQLite database from the server
           logs     - Follow logs of the deployed container
           ssh      - SSH into the server as administrator, alias: sudo
+      HELP
+
+      aliases.each { |cmd_name, cmd_exec| puts <<~HELP }
+        #{'  ' << cmd_name}#{[9 - cmd_name.size, 1].max * ' '} - Alias command: #{cmd_exec}
       HELP
     end
   end
